@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock, MessageSquare, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { serverUrl } from '../main.jsx';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserData } from '../redux/userSlice.js'; // Added missing import
 
 function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +17,13 @@ function Login() {
   
   // State for error message
   const [error, setError] = useState('');
+  
+  const { userData } = useSelector((state) => state.user);
+
+  // Wrapped inside useEffect to prevent continuous re-log loops on renders
+  useEffect(() => {
+    console.log("userData in login.jsx:", userData);
+  }, [userData]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,11 +41,13 @@ function Login() {
           withCredentials: true,
         }
       );
-      console.log('Login successful:', result);
+
+      // Handle both nested user objects (result.data.user) and direct responses
+      const userPayload = result.data.user || result.data;
+      dispatch(setUserData(userPayload));
       navigate('/');
     } catch (err) {
       console.log('Error:', err);
-      // Catch error message from response or fallback to default text
       const errorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
       setError(errorMessage);
     } finally {
@@ -144,4 +156,4 @@ function Login() {
   );
 }
 
-export default Login;  
+export default Login;

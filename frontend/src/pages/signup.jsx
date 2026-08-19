@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, User, AtSign, Mail, Lock, MessageSquare, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { serverUrl } from '../main.jsx';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUserData } from '../redux/userSlice.js';
 
 function Signup() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    // Redux State
+    const { userData } = useSelector((state) => state.user);
+
+    // Local Form State
     const [name, setName] = useState('');
     const [userName, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -15,33 +21,41 @@ function Signup() {
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Error state
+    // Error State
     const [error, setError] = useState('');
-    const dispatch=useDispatch();
-   
+
+    // 1. Log userData only when it actually changes (stops console log spam)
+    useEffect(() => {
+        console.log("userData in signup.jsx:", userData);
+    }, [userData]);
+
+    // 2. Automatically redirect user away from signup if already logged in
+    useEffect(() => {
+        if (userData) {
+            navigate('/'); // Change '/' to your home/dashboard route if different
+        }
+    }, [userData, navigate]);
 
     const handleSignup = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setError(''); // Reset error state on new submit
+        setError('');
 
         try {
             const result = await axios.post(
                 `${serverUrl}/api/auth/signup`,
-                {
-                    name,
-                    userName,
-                    email,
-                    password    
-                }, {
-                    withCredentials: true
-                }
+                { name, userName, email, password },
+                { withCredentials: true }
             );
-            // console.log(result);
-            dispatch(setUserData(result.data));
-            // navigate('/login');
+
+            // Set user data in Redux (extract nested user if backend wraps it)
+            const userPayload = result.data.user || result.data;
+            dispatch(setUserData(userPayload));
+
+            // Navigate to home after successful registration
+            navigate('/');
         } catch (err) {
-            console.log("Error:", err);
+            console.error("Signup Error:", err);
             const errorMessage = err.response?.data?.message || 'Signup failed. Please try again.';
             setError(errorMessage);
         } finally {

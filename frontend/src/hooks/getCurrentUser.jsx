@@ -13,7 +13,7 @@ const getCurrentUser =() => {
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const response = await axios.post(`${serverUrl}/api/user/current`, { withCredentials: true });
+                const response = await axios.post(`${serverUrl}/api/user/current`, {},{ withCredentials: true });
                 if (response.data) {
                     dispatch(setUserData(response.data));
                 }
