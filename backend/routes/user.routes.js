@@ -1,11 +1,13 @@
 import express from "express";
-import { isCurrentUser } from "../controller/user.controller.js";
+import { editProfile, isCurrentUser } from "../controller/user.controller.js";
 import isAuth from "../middlewares/isAuth.js";
+import { upload } from "../middlewares/multer.js";
 
 export const userRouter= express.Router()
 
 
 userRouter.post("/current",isAuth,isCurrentUser)
+userRouter.put("/profile",isAuth,upload.single("image"),editProfile)
 
 
 

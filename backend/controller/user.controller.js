@@ -22,3 +22,11 @@ export const isCurrentUser=async (req,res)=>{
     });
 }
 }
+export const editProfile= async (req,res)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+
+}
